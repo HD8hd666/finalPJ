@@ -27,44 +27,49 @@ public class CouponController extends HttpServlet {
 
 	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		String action = request.getParameter("action");
-		if (action.equals("create")) {
+		if ("create".equals(action)) {
 			createCoupon(request, response);
-		} else if (action.equals("find")) {
+		} else if ("find".equals(action)) {
 			findCoupon(request, response);
+		} else {
+			response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Unknown action: " + action);
 		}
 	}
-}
 
 	private void findCoupon(HttpServletRequest request, HttpServletResponse response) throws IOException {
-	    String couponCode = request.getParameter("couponCode");
-	    Coupon coupon = dao.findByCode(couponCode);
+		String couponCode = request.getParameter("couponCode");
+		Coupon coupon = dao.findByCode(couponCode);
 
-	    response.setContentType("text/html");
-	    PrintWriter out = response.getWriter();
+		response.setContentType("text/html;charset=UTF-8");
+		PrintWriter out = response.getWriter();
 
-	    if (coupon != null) {
-	        out.print(coupon);
-	    } else {
-	        out.print("<b>Coupon not found.</b>");
-	    }
-	    out.print("<br/> <a href='/CouponProductProject'>Home</a>");
+		if (coupon != null && coupon.getId() != 0) {
+			out.print("<pre>" + coupon.toString() + "</pre>");
+		} else {
+			out.print("<b>Coupon not found.</b>");
+		}
+		out.print("<br/> <a href='index.html'>Home</a>");
 	}
 
 	private void createCoupon(HttpServletRequest request, HttpServletResponse response) throws IOException {
-	    String couponCode = request.getParameter("couponCode");
-	    String discount = request.getParameter("discount");
-	    String expiryDate = request.getParameter("expiryDate");
+		String couponCode = request.getParameter("couponCode");
+		String discount = request.getParameter("discount");
+		String expiryDate = request.getParameter("expiryDate");
 
-	    Coupon coupon = new Coupon();
-	    coupon.setCode(couponCode);
-	    coupon.setDiscount(new BigDecimal(discount));
-	    coupon.setExpDate(expiryDate);
+		Coupon coupon = new Coupon();
+		coupon.setCode(couponCode);
+		try {
+			coupon.setDiscount(new BigDecimal(discount));
+		} catch (Exception e) {
+			coupon.setDiscount(BigDecimal.ZERO);
+		}
+		coupon.setExpDate(expiryDate);
 
-	    dao.save(coupon);
+		dao.save(coupon);
 
-	    response.setContentType("text/html");
-	    PrintWriter out = response.getWriter();
-	    out.print("<b>Coupon created!!</b>");
-	    out.print("<br/> <a href='/CouponProductProject'>Home</a>");
+		response.setContentType("text/html;charset=UTF-8");
+		PrintWriter out = response.getWriter();
+		out.print("<b>Coupon created!!</b>");
+		out.print("<br/> <a href='index.html'>Home</a>");
 	}
 }
